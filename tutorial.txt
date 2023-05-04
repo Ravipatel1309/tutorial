@@ -1,0 +1,735 @@
+#####################################
+        8 Puzzle DFS BFS
+#####################################
+
+from collections import deque
+
+print('Enter initial state: ')
+
+# initial_state = [[int(input()) for _ in range(3)] for _ in range(3)]
+initial_state = [[1,2,3],
+                [5,6,0],
+                [7,8,4]]
+
+print('Enter Goal state: ')
+# goal_state = [[int(input()) for _ in range(3)] for _ in range(3)]
+goal_state = [[1,2,3],
+                [5,8,6],
+                [0,7,4]]
+
+def bfs(initial_state,goal_state):
+    queue = deque([(initial_state,[])])
+    visited = set()
+
+    while queue:
+        state, path = queue.popleft()
+        if state==goal_state:
+            return path + [state]
+        if tuple(map(tuple,state)) not in visited:
+            visited.add(tuple(map(tuple,state)))
+            for move in moves(state):
+                new_state = applyMove(state,move)
+                new_path = path + [new_state]
+                queue.append((new_state,new_path))
+    return None
+
+def dfs(initial_state,goal_state):
+    stack = [(initial_state,[])]
+    visited = set()
+    while stack:
+        state,path = stack.pop()
+        if state==goal_state:
+            return path + [state]
+        if tuple(map(tuple,state)) not in visited:
+            visited.add(tuple(map(tuple,state)))
+            for move in moves(state):
+                new_state = applyMove(state,move)
+                new_path = path + [new_state]
+                stack.append((new_state,new_path))
+
+    return None
+
+def applyMove(state,move):
+    row,col = find_blank(state)
+    new_state = [row[:] for row in state]
+
+    if move=='up':
+        new_state[row][col],new_state[row-1][col] = new_state[row-1][col],new_state[row][col]
+    elif move=='down':
+        new_state[row][col],new_state[row+1][col] = new_state[row+1][col],new_state[row][col]
+    elif move=='left':
+        new_state[row][col],new_state[row][col-1] = new_state[row][col-1],new_state[row][col]
+    elif move=='right':
+        new_state[row][col],new_state[row][col+1] = new_state[row][col+1],new_state[row][col]
+    
+    return new_state
+
+def moves(state):
+    move = []
+    row,col = find_blank(state)
+
+    if row>0:
+        move.append('up')
+    if row<2:
+        move.append('down')
+    if col>0:
+        move.append('left')
+    if col < 2:
+        move.append('right')
+    return move
+
+def find_blank(state):
+    for i in range(3):
+        for j in range(3):
+            if state[i][j]==0:
+                return i,j
+
+def print_state(state):
+    for row in state:
+        print(row)
+    print()
+
+method = input("Enter method BFS of DFS: ")
+
+if method.lower() == 'bfs':
+    solution = bfs(initial_state,goal_state)
+elif method.lower() == 'dfs':
+    solution = dfs(initial_state,goal_state)
+else:
+    print("Undefined method")
+    solution = None
+
+if solution:
+    print('Solution in' , len(solution)-1 , " moves:")
+    for state in solution:
+        print_state(state)
+else:
+    print("Solution does not exist.")
+
+
+#######################################
+            Water Jug DFS
+######################################
+
+#include <bits/stdc++.h>
+using namespace std;
+
+vector<pair<pair<int, int>, pair<int, int>>> traversal_path;
+
+bool dfs(int curr1, int curr2, int jug1, int jug2, pair<int, int> &goal, map<pair<int, int>, bool> &vis)
+{
+
+    if (!vis[{curr1, curr2}] && make_pair(curr1, curr2) == goal)
+        return true;
+
+    if (vis[{curr1, curr2}])
+        return false;
+
+    vis[{curr1, curr2}] = true;
+
+    //fill
+    if (curr1 < jug1 && !vis[{jug1, curr2}] && dfs(jug1, curr2, jug1, jug2, goal, vis))
+    {
+        traversal_path.push_back({{curr1, curr2}, {jug1, curr2}});
+        return true;
+    }
+    if (curr2 < jug2 && !vis[{curr1, jug2}] && dfs(curr1, jug2, jug1, jug2, goal, vis))
+    {
+        traversal_path.push_back({{curr1, curr2}, {curr1, jug2}});
+        return true;
+    }
+
+    //empty
+    if (curr1 > 0 && !vis[{0, curr2}] && dfs(0, curr2, jug1, jug2, goal, vis))
+    {
+        traversal_path.push_back({{curr1, curr2}, {0, curr2}});
+        return true;
+    }
+    if (curr2 > 0 && !vis[{curr1, 0}] && dfs(curr1, 0, jug1, jug2, goal, vis))
+    {
+        traversal_path.push_back({{curr1, curr2}, {curr1, 0}});
+        return true;
+    }
+
+    //transfer
+    if (curr1 > 0 && curr2 < jug2)
+    {
+        if (curr1 + curr2 <= jug2 && !vis[{0, curr1 + curr2}] && dfs(0, curr1 + curr2, jug1, jug2, goal, vis))
+        {
+            traversal_path.push_back({{curr1, curr2}, {0, curr1 + curr2}});
+            return true;
+        }
+        else if (!vis[{curr1 + curr2 - jug2, jug2}] && dfs(curr1 + curr2 - jug2, jug2, jug1, jug2, goal, vis))
+        {
+            traversal_path.push_back({{curr1, curr2}, {curr1 + curr2 - jug2, jug2}});
+            return true;
+        }
+    }
+
+    if (curr2 > 0 && curr1 < jug1)
+    {
+        if (curr1 + curr2 <= jug1 && !vis[{curr1 + curr2, 0}] && dfs(curr1 + curr2, 0, jug1, jug2, goal, vis))
+        {
+            traversal_path.push_back({{curr1, curr2}, {curr1 + curr2, 0}});
+            return true;
+        }
+        else if (!vis[{jug1, curr1 + curr2 - jug1}] && dfs(jug1, curr1 + curr2 - jug1, jug1, jug2, goal, vis))
+        {
+            traversal_path.push_back({{curr1, curr2}, {jug1, curr1 + curr2 - jug1}});
+            return true;
+        }
+    }
+
+    return false;
+}
+
+int main()
+{
+    int jug1 = 4;
+    int jug2 = 3;
+
+    pair<int, int> goal = {4, 2};
+    map<pair<int, int>, bool> visited;
+
+    if (dfs(0, 0, jug1, jug2, goal, visited))
+    {
+        cout << "***Solution Exist***" << endl;
+        reverse(traversal_path.begin(), traversal_path.end());
+
+        for (auto &t : traversal_path)
+        {
+            cout << t.first.first << "," << t.first.second << " -> " << t.second.first << "," << t.second.second << endl;
+        }
+    }
+    else
+    {
+        cout << "***Solution does not Exist***" << endl;
+    }
+
+    return 0;
+}
+
+
+################################################
+                Graph BFS
+################################################
+
+from collections import deque
+
+graph = {
+    'A':['B','C','E'],
+    'B': ['E', 'F'],
+    'C': ['D'],
+    'D': ['F'],
+    'E': ['C'],
+    'F': ['D']
+}
+
+def bfs(graph,start,end):
+    queue = deque([(start,[start])])
+    while queue:
+        node, path = queue.popleft()
+        for neighbour in graph[node]:
+            if neighbour not in path:
+                if neighbour==end:
+                    return path+ [neighbour]
+                else:
+                    queue.append((neighbour,path+[neighbour]))
+    return None
+
+            
+start = input("Start node: ")
+end = input("End node: ")
+
+path = bfs(graph,start,end)
+
+if path is None:
+    print("Not exist.")
+else:
+    print(path)
+
+
+
+#####################################################
+                Graph DFS
+######################################################
+
+graph = {'A': ['B', 'C', 'E'],
+         'B': ['E', 'F'],
+         'C': ['D'],
+         'D': ['F'],
+         'E': ['C'],
+         'F': ['D']}
+
+def dfs_paths(graph, start, end, path=[]):
+    path = path + [start]
+    if start == end:
+        return [path]
+    if start not in graph:
+        return []
+    paths = []
+    for node in graph[start]:
+        if node not in path:
+            new_paths = dfs_paths(graph, node, end, path)
+            for new_path in new_paths:
+                paths.append(new_path)
+    return paths
+
+start_node = input("Enter the starting node: ")
+end_node = input("Enter the end node: ")
+
+all_paths = dfs_paths(graph, start_node, end_node)
+
+print("All possible paths between", start_node, "and", end_node, "are:")
+for path in all_paths:
+    print(path)
+
+
+################################################
+                Monkey Banana 
+################################################
+
+on(floor,monkey).
+on(floor,box).
+in(room,monkey).
+in(room,box).
+at(ceiling,banana).
+
+strong(monkey).
+grasp(monkey).
+climb(monkey,box).
+
+push(monkey,box):-
+    strong(monkey).
+
+under(banana,box):-
+    push(monkey,box).
+
+canreach(monkey,banana):-
+    at(floor,banana);
+    at(ceiling,banana),
+    under(banana,box),
+    climb(monkey,box).
+
+canget(monkey,banana):-
+    canreach(monkey,banana), grasp(monkey).
+
+
+#########################################################
+            Sum of series 1 to 10
+#########################################################
+
+sum([],0).
+
+sum([Head|Tail],Sum):-
+    sum(Tail,Sum1),
+    Sum is Sum1 + Head.
+
+generate_list(1,[1]).
+generate_list(N,List):-
+    N > 1,
+    N1 is N-1,
+    generate_list(N1,List),
+    append(L)
+
+main:-
+    sum([1,2,3,4,5,6,7,8,9,10],Sum),
+    write("Sum is: "),write(Sum).
+
+
+######################################################
+                length and reverse of List
+#######################################################
+
+rev_len_list([],0,[]).
+
+rev_len_list([H|T],N,R):-
+    rev_len_list(T,N1,R1),
+    N is N1 + 1,
+    append(R1,[H],R).
+
+
+#####################################################
+                    Factorial 
+####################################################
+
+fact(0,1).
+
+fact(N,K):-
+    N1 is N-1,
+    fact(N1,K1),
+    K is K1*N.
+
+
+#########################################################
+                Box Solver
+#######################################################
+
+getbox(1). getbox(2). getbox(3). getbox(4). getbox(5).
+
+% Define Box numbers, colour, size
+box(1,black,3).
+box(2,black,1).
+box(3,white,1).
+box(4,black,2).
+box(5,white,3).
+
+owners(A,B,C,D,E):-
+    getbox(A), getbox(B), getbox(C), getbox(D), getbox(E),
+    A\=B, A\=C, A\=D, A\=E,
+    B\=C, B\=D, B\=E,
+    C\=D, C\=E,
+    D\=E,
+    box(A,ColorA,_), box(B,ColorA,_), 
+    box(D,ColorD,_), box(E,ColorD,_),
+    box(C,_,SizeC), box(D,_,SizeC),
+    box(E,_,SizeE), box(B,_,SizeB),
+    SizeE < SizeB.
+
+
+#####################################################
+                    WJug BFS
+#######################################################
+
+#include <bits/stdc++.h>
+#define ll long long
+#define ull unsigned long long
+#define sz size()
+#define vll vector<ll>
+#define mp make_pair
+#define pb push_back
+#define ppb pop_back
+#define fi first
+#define se second
+#define no cout << "NO" << endl;
+#define yes cout << "YES" << endl;
+#define mod 1000000007
+#define all(x) (x).begin(), (x).end()
+#define SORT(v) sort(all(v))
+#define REVSORT(v) sort(all(v), greater<int>())
+#define MAX(v) max_element(all(v))
+#define MIN(v) min_element(all(v))
+#define rep(from, to) for (int i = from; i <= to; i++)
+#define rep_back(from, to) for (int i = from; i >= to; i--)
+#define take(v) rep(0, v.size()) cin >> v[i];
+#define FASTIO                        \
+    ios_base::sync_with_stdio(false); \
+    cin.tie(NULL);                    \
+    cout.tie(NULL)
+using namespace std;
+/* ========== YOUR CODE HERE ========= */
+vector<pair<pair<int, int>, pair<int, int>>> traversal_path;
+map<pair<int, int>, set<pair<int, int>>> mp;
+bool bfs(int jug1, int jug2, pair<int, int> goal)
+{
+    // visited[{0, 0}] = true;
+    map<pair<int, int>, bool> visited;
+    queue<pair<int, int>> q;
+    q.push({0, 0});
+    while (!q.empty())
+    {
+        pair<int, int> top = q.front();
+        q.pop();
+        if (top == goal)
+        {
+            return true;
+        }
+        if (!visited[top])
+        {
+            visited[top] = true;
+            // fill
+            if (top.first < jug1)
+            {
+                if (!visited[{jug1, top.second}])
+                {
+                    q.push({jug1, top.second});
+                    traversal_path.push_back({top, {jug1, top.second}});
+                }
+            }
+            if (top.second < jug2)
+            {
+                if (!visited[{top.first, jug2}])
+                {
+                    q.push({top.first, jug2});
+                    traversal_path.push_back({top, {top.first, jug2}});
+                }
+            }
+            // empty
+            if (top.first > 0)
+            {
+                if (!visited[{0, top.second}])
+                {
+                    q.push({0, top.second});
+                    traversal_path.push_back({top, {0, top.second}});
+                }
+            }
+            if (top.second > 0)
+            {
+                if (!visited[{top.first, 0}])
+                {
+                    q.push({top.first, 0});
+                    traversal_path.push_back({top, {top.first, 0}});
+                }
+            }
+            // transfer
+            if (top.first > 0 and top.second < jug2)
+            {
+                if (top.first + top.second <= jug2)
+                {
+                    if (!visited[{0, top.first + top.second}])
+                    {
+                        q.push({0, top.first + top.second});
+                        traversal_path.push_back({top, {0, top.first + top.second}});
+                    }
+                }
+                else
+                {
+                    if (!visited[{top.first + top.second - jug2, jug2}])
+                    {
+                        q.push({top.first + top.second - jug2, jug2});
+                        traversal_path.push_back({top, {top.first + top.second - jug2, jug2}});
+                    }
+                }
+            }
+            if (top.second > 0 and top.first < jug1)
+            {
+                if (top.first + top.second <= jug1)
+                {
+                    if (!visited[{top.first + top.second, 0}])
+                    {
+                        q.push({top.first + top.second, 0});
+                        traversal_path.push_back({top, {top.first + top.second, 0}});
+                    }
+                }
+                else
+                {
+                    if (!visited[{jug1, top.first + top.second - jug1}])
+                    {
+                        q.push({jug1, top.first + top.second - jug1});
+                        traversal_path.push_back({top, {jug1, top.first + top.second - jug1}});
+                    }
+                }
+            }
+        }
+    }
+    // if solution not exists
+    return false;
+}
+int main()
+{
+    FASTIO;
+    int jug1 = 4;
+    int jug2 = 3;
+    pair<int, int> goal = {2, 0};
+    if (bfs(jug1, jug2, goal))
+    {
+        cout << "\n*** Solution Exist ***\n";
+        pair<int, int> node = goal;
+        reverse(all(traversal_path));
+        vector<pair<int, int>> path;
+        path.push_back(goal);
+        for (auto i : traversal_path)
+        {
+            if (i.second == node)
+            {
+                node = i.first;
+                path.push_back(node);
+            }
+        }
+        reverse(all(path));
+        for (auto i : path)
+            cout << i.first << " " << i.second << "\n";
+    }
+    else
+        cout << "\n*** Solution Not Exist ***\n";
+    return 0;
+}
+
+
+#####################################################
+                    A* 
+#################################################
+
+#include <bits/stdc++.h>
+#define all(x) (x).begin(), (x).end()
+#define FASTIO                        \
+    ios_base::sync_with_stdio(false); \
+    cin.tie(NULL);                    \
+    cout.tie(NULL)
+using namespace std;
+/* ========== YOUR CODE HERE ========= */
+int size;
+class Node
+{
+public:
+    vector<vector<int>> board;
+    int depth, misplaced;
+    Node *parent;
+    Node()
+    {
+        depth = 0;
+        misplaced = 0;
+        parent = NULL;
+    }
+    static int heuristic(Node start, Node goal)
+    {
+        int count = 0;
+        for (int i = 0; i < start.board.size(); i++)
+        {
+            for (int j = 0; j < start.board.size(); j++)
+            {
+                if (start.board[i][j] != 0 and start.board[i][j] != goal.board[i][j])
+                {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+    bool operator==(Node a)
+    {
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
+                if (this->board[i][j] != a.board[i][j])
+                    return false;
+        return true;
+    }
+    void print()
+    {
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+                cout << board[i][j] << " ";
+            cout << endl;
+        }
+    }
+};
+bool compare(Node a, Node b)
+{
+    return a.misplaced < b.misplaced;
+}
+bool isinset(Node a, vector<Node> b)
+{
+    for (int i = 0; i < b.size(); i++)
+        if (a == b[i])
+            return true;
+    return false;
+}
+void addChild(Node current, Node goal, int newi, int newj, int blanki, int blankj, vector<Node> &openset,
+              vector<Node> &closeset)
+{
+    Node newNode = current;
+    swap(newNode.board[newi][newj], newNode.board[blanki][blankj]);
+    if (!isinset(newNode, openset) and !isinset(newNode, closeset))
+    {
+        newNode.depth = current.depth + 1;
+        newNode.misplaced = newNode.depth + Node::heuristic(newNode, goal);
+        Node *temp = new Node;
+        *temp = current;
+        newNode.parent = temp;
+        openset.push_back(newNode);
+    }
+}
+void getChilds(Node current, Node goal, vector<Node> &openset, vector<Node> &closeset)
+{
+    int blanki, blankj;
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            if (current.board[i][j] == 0)
+            {
+                blanki = i;
+                blankj = j;
+                break;
+            }
+        }
+    }
+    int i = blanki;
+    int j = blankj;
+    if (i - 1 >= 0)
+    {
+        addChild(current, goal, i - 1, j, blanki, blankj, openset, closeset);
+    }
+    if (i + 1 < size)
+    {
+        addChild(current, goal, i + 1, j, blanki, blankj, openset, closeset);
+    }
+    if (j - 1 >= 0)
+    {
+        addChild(current, goal, i, j - 1, blanki, blankj, openset, closeset);
+    }
+    if (j + 1 < size)
+    {
+        addChild(current, goal, i, j + 1, blanki, blankj, openset, closeset);
+    }
+}
+bool reconstruct_path(Node current, vector<Node> &came_from)
+{
+    // cout << "Generating path ...\n";
+    Node *temp = &current;
+    while (temp != NULL)
+    {
+        came_from.push_back(*temp);
+        temp = temp->parent;
+    }
+    return true;
+}
+vector<Node> path;
+bool solve(Node start, Node goal)
+{
+    vector<Node> openset;
+    vector<Node> closeset;
+    start.depth = 0;
+    start.misplaced = start.depth + Node ::heuristic(start, goal);
+    openset.push_back(start);
+    while (!openset.empty())
+    {
+        sort(all(openset), compare);
+        Node current = openset[0];
+        if (current == goal)
+        {
+            return reconstruct_path(current, path);
+        }
+        openset.erase(openset.begin());
+        closeset.push_back(current);
+        getChilds(current, goal, openset, closeset);
+    }
+    return false;
+}
+int main()
+{
+    FASTIO;
+    int n = 3;
+    size = n;
+    Node initial_state;
+    initial_state.board = {{2, 8, 3}, {1, 6, 4}, {7, 0, 5}};
+    Node goal_state;
+    goal_state.board = {{1, 2, 3}, {8, 0, 4}, {7, 6, 5}};
+    if (solve(initial_state, goal_state))
+    {
+        cout << "Solved\n";
+        cout << "\n************\n";
+        for (int i = path.size() - 1; i >= 0; i--)
+        {
+            path[i].print();
+            if (i != 0)
+                cout << "\n | \n\n";
+        }
+        cout << "\n************\n";
+    }
+    else
+    {
+        cout << "Fail\n";
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+
+
